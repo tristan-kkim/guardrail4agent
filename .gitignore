@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Model weights & checkpoints
+*.bin
+*.safetensors
+*.pt
+*.pth
+checkpoints/
+outputs/
+runs/
+wandb/
+
+# Data (raw / generated — commit only samples)
+data/synthetic/*.jsonl
+data/synthetic/*.json
+!data/synthetic/sample_100.json
+
+# Environment variables
+.env
+.env.local
+*.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# HuggingFace cache
+.cache/
+hub/
