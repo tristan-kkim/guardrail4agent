@@ -1,6 +1,11 @@
 """
 Tool Call 데이터 유출 탐지용 합성 데이터 생성 파이프라인.
 Claude API를 사용하여 도메인별 시나리오를 생성합니다.
+
+실행 예시:
+  단일 도메인: python data/generate_synthetic.py --domain finance --count 1000
+  전체 도메인: python data/generate_synthetic.py --all-domains --count 7000
+  S3 업로드:  python data/generate_synthetic.py --all-domains --count 7000 --s3-bucket my-bucket
 """
 
 import argparse
@@ -50,6 +55,9 @@ GENERATION_PROMPT = """\
 결과는 JSON 배열로 반환하세요. 시나리오는 현실적이고 다양해야 합니다.\
 """
 
+MAX_RETRIES = 3
+RETRY_DELAY = 5
+
 
 def generate_scenarios(
     domain: str,
@@ -65,51 +73,100 @@ def generate_scenarios(
         tools=", ".join(DOMAIN_TOOLS.get(domain, DOMAIN_TOOLS["general"])),
     )
 
-    message = client.messages.create(
-        model="claude-haiku-4-5-20251001",
-        max_tokens=4096,
-        messages=[{"role": "user", "content": prompt}],
-    )
+    for attempt in range(1, MAX_RETRIES + 1):
+        try:
+            message = client.messages.create(
+                model="claude-haiku-4-5-20251001",
+                max_tokens=4096,
+                messages=[{"role": "user", "content": prompt}],
+            )
+            text = message.content[0].text
+            start = text.find("[")
+            end = text.rfind("]") + 1
+            if start == -1 or end == 0:
+                raise ValueError("JSON 배열을 찾을 수 없음")
+            return json.loads(text[start:end])
+        except Exception as e:
+            print(f"  시도 {attempt}/{MAX_RETRIES} 실패: {e}")
+            if attempt < MAX_RETRIES:
+                time.sleep(RETRY_DELAY * attempt)
 
-    text = message.content[0].text
-    # JSON 블록 추출
-    start = text.find("[")
-    end = text.rfind("]") + 1
-    if start == -1 or end == 0:
-        return []
+    return []
 
-    try:
-        return json.loads(text[start:end])
-    except json.JSONDecodeError:
-        return []
+
+def upload_to_s3(local_path: str, bucket: str, s3_key: str) -> None:
+    import boto3
+    s3 = boto3.client("s3")
+    s3.upload_file(local_path, bucket, s3_key)
+    print(f"S3 업로드 완료: s3://{bucket}/{s3_key}")
 
 
 def main():
     parser = argparse.ArgumentParser(description="Tool Call 합성 데이터 생성")
     parser.add_argument("--domain", default="finance", choices=list(DOMAIN_TOOLS.keys()))
-    parser.add_argument("--count", type=int, default=100)
-    parser.add_argument("--output", default="data/synthetic/generated.jsonl")
+    parser.add_argument("--all-domains", action="store_true", help="모든 도메인 생성")
+    parser.add_argument("--count", type=int, default=1000, help="총 생성 건수")
+    parser.add_argument("--output-dir", default="data/synthetic")
+    parser.add_argument("--s3-bucket", default=None, help="완료 후 S3 버킷에 업로드")
+    parser.add_argument("--s3-prefix", default="guardrail4agent/data")
     args = parser.parse_args()
 
     client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
-    output_path = Path(args.output)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_dir = Path(args.output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
 
-    per_category = max(1, args.count // len(CATEGORIES))
+    domains = list(DOMAIN_TOOLS.keys()) if args.all_domains else [args.domain]
+    per_domain = args.count // len(domains)
+    per_category = max(1, per_domain // len(CATEGORIES))
+
     all_scenarios = []
 
-    for category in CATEGORIES:
-        print(f"Generating {per_category} scenarios: domain={args.domain}, category={category}")
-        scenarios = generate_scenarios(args.domain, category, per_category, client)
-        all_scenarios.extend(scenarios)
-        print(f"  → {len(scenarios)} generated")
-        time.sleep(1)
+    for domain in domains:
+        print(f"\n[도메인: {domain}]")
+        for category in CATEGORIES:
+            print(f"  카테고리 {category} 생성 중 ({per_category}건)...")
+            scenarios = generate_scenarios(domain, category, per_category, client)
+            # 도메인 정보 추가
+            for s in scenarios:
+                s["domain"] = domain
+            all_scenarios.extend(scenarios)
+            print(f"  → {len(scenarios)}건 생성됨 (누계: {len(all_scenarios)})")
+            time.sleep(1)
 
-    with open(output_path, "w", encoding="utf-8") as f:
-        for scenario in all_scenarios:
-            f.write(json.dumps(scenario, ensure_ascii=False) + "\n")
+    # 전체 저장
+    all_path = output_dir / "all.jsonl"
+    with open(all_path, "w", encoding="utf-8") as f:
+        for s in all_scenarios:
+            f.write(json.dumps(s, ensure_ascii=False) + "\n")
 
-    print(f"\nTotal: {len(all_scenarios)} scenarios saved to {output_path}")
+    # train / val / test 분리 (7:1.5:1.5)
+    import random
+    random.seed(42)
+    random.shuffle(all_scenarios)
+    n = len(all_scenarios)
+    train_end = int(n * 0.7)
+    val_end = int(n * 0.85)
+
+    splits = {
+        "train": all_scenarios[:train_end],
+        "val": all_scenarios[train_end:val_end],
+        "test": all_scenarios[val_end:],
+    }
+
+    for split_name, data in splits.items():
+        split_path = output_dir / f"{split_name}.jsonl"
+        with open(split_path, "w", encoding="utf-8") as f:
+            for s in data:
+                f.write(json.dumps(s, ensure_ascii=False) + "\n")
+        print(f"{split_name}: {len(data)}건 → {split_path}")
+
+    print(f"\n총 {len(all_scenarios)}건 생성 완료")
+
+    if args.s3_bucket:
+        for split_name in ["train", "val", "test", "all"]:
+            local = str(output_dir / f"{split_name}.jsonl")
+            s3_key = f"{args.s3_prefix}/{split_name}.jsonl"
+            upload_to_s3(local, args.s3_bucket, s3_key)
 
 
 if __name__ == "__main__":

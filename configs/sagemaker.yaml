@@ -1,0 +1,23 @@
+# AWS SageMaker Training Job 설정
+
+region: ap-northeast-2
+
+# IAM Role (없으면 환경변수 SAGEMAKER_ROLE_ARN 또는 기본 역할 사용)
+# role_arn: arn:aws:iam::123456789012:role/SageMakerExecutionRole
+
+# Docker 이미지: HuggingFace PyTorch DLC (변경 불필요)
+# ap-northeast-2 기준 HuggingFace Training DLC (PyTorch 2.1, Python 3.10, CUDA 12.1)
+docker_image: 763104351884.dkr.ecr.ap-northeast-2.amazonaws.com/huggingface-pytorch-training:2.1.0-transformers4.36.0-gpu-py310-cu121-ubuntu20.04
+
+# S3 경로 (버킷명 수정 필요)
+s3_data_uri: s3://YOUR-BUCKET/guardrail4agent/data/
+s3_output_uri: s3://YOUR-BUCKET/guardrail4agent/outputs/
+
+# 인스턴스 설정
+# p3.2xlarge  : V100  16GB  (QLoRA 필수, flash_attention_2 미지원)
+# g5.2xlarge  : A10G  24GB  (QLoRA 권장, flash_attention_2 지원, p3보다 저렴)
+# p4d.24xlarge: A100 320GB  (풀 파인튜닝 가능, 고비용)
+instance_type: ml.g5.2xlarge
+instance_count: 1
+volume_gb: 100
+max_runtime_seconds: 86400  # 24시간
