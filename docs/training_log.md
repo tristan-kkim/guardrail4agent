@@ -415,7 +415,11 @@ lr: 5e-5 / beta: 0.1 / epochs: 1
 
 | 날짜 | 문제 | 원인 | 해결 | 관련 파일 |
 |------|------|------|------|---------|
-| | | | | |
+| 2026-05-12 | S5 F1 0.333 — S3으로 오분류 | 시스템 프롬프트에 S5/S3 판별 기준 미명시 | v3 프롬프트에 "외부 데이터 원인→S3, user_input+내부 지침 표적→S5" 판별 기준 추가 | `src/evaluate/run_tests.py`, `src/guardrail/classifier.py` |
+| 2026-05-12 | FPR 16.7% — safe 과탐 | "익명화 통계", "내부 직원 이메일" 케이스를 unsafe로 오탐 | v3 프롬프트에 safe 판별 기준(익명화·내부이동·더미키) 명시 → FPR 0% 달성 | `src/evaluate/run_tests.py` |
+| 2026-05-12 | generate_synthetic JSON 잘림 | 20건씩 요청 시 max_tokens 4096 초과 | BATCH_SIZE=5, max_tokens=8192로 수정 | `data/generate_synthetic.py` |
+| 2026-05-12 | evaluation_strategy 오류 | eval_dataset 없이 "epoch" 평가 설정 | `train_test_split(test_size=0.1)` 후 eval_dataset 전달 | `src/finetune/sft_train.py` |
+| 2026-05-12 | Flash Attention 2 호환 오류 | V100(compute 7.0)에서 Flash Attn2 미지원 | `supports_flash_attention()` compute capability ≥ 8.0 조건 추가 | `src/finetune/sft_train.py` |
 
 ---
 
@@ -425,3 +429,5 @@ lr: 5e-5 / beta: 0.1 / epochs: 1
 |------|------|---------|
 | v0.1 | 2026-05-12 | 초기 설정 (A10G 24GB 최적화) |
 | v0.2 | 2026-05-12 | 프로토타입 평가 결과 삽입 (실험 P: 93.8% / 16케이스) |
+| v0.3 | 2026-05-12 | 시스템 프롬프트 v3 (S5↔S3 구분) → 50케이스 94.0% / F1 0.940 |
+| v0.4 | 2026-05-12 | SFT 합성 데이터 500건 파이럿 생성 완료 (6도메인 × 6카테고리) |
