@@ -1,23 +1,35 @@
-# AWS SageMaker Training Job 설정
+# AWS SageMaker Training Job 설정 — ml.g5.2xlarge (A10G 24GB) 고정
 
 region: ap-northeast-2
 
-# IAM Role (없으면 환경변수 SAGEMAKER_ROLE_ARN 또는 기본 역할 사용)
+# IAM Role (없으면 환경변수 SAGEMAKER_ROLE_ARN 또는 계정 기본 역할 사용)
 # role_arn: arn:aws:iam::123456789012:role/SageMakerExecutionRole
 
-# Docker 이미지: HuggingFace PyTorch DLC (변경 불필요)
-# ap-northeast-2 기준 HuggingFace Training DLC (PyTorch 2.1, Python 3.10, CUDA 12.1)
+# HuggingFace PyTorch DLC (PyTorch 2.1 / CUDA 12.1 / Python 3.10)
 docker_image: 763104351884.dkr.ecr.ap-northeast-2.amazonaws.com/huggingface-pytorch-training:2.1.0-transformers4.36.0-gpu-py310-cu121-ubuntu20.04
 
 # S3 경로 (버킷명 수정 필요)
 s3_data_uri: s3://YOUR-BUCKET/guardrail4agent/data/
 s3_output_uri: s3://YOUR-BUCKET/guardrail4agent/outputs/
 
-# 인스턴스 설정
-# p3.2xlarge  : V100  16GB  (QLoRA 필수, flash_attention_2 미지원)
-# g5.2xlarge  : A10G  24GB  (QLoRA 권장, flash_attention_2 지원, p3보다 저렴)
-# p4d.24xlarge: A100 320GB  (풀 파인튜닝 가능, 고비용)
+# ── 인스턴스: ml.g5.2xlarge ──
+#   GPU  : NVIDIA A10G  24 GB GDDR6
+#   vCPU : 8
+#   RAM  : 32 GB
+#   가격 : ~$1.21/hr (ap-northeast-2 온디맨드 기준)
+#
+# ── 학습 시간 예상 ──
+#   8B QLoRA  (batch=4, step ~0.8/sec): 4,900 steps/epoch × 3 = 14,700 steps → 약 5시간
+#   2.1B full (batch=8, step ~2.5/sec): 4,900 steps/epoch × 3 =  4,900 steps → 약 30분
+#   총 비용 (8B 기준): 5hr × $1.21 ≈ $6
+#
+# ── 다른 인스턴스 비교 ──
+#   ml.p3.2xlarge  : V100 16GB  $3.83/hr  Flash Attn2 미지원, batch=1만 가능
+#   ml.g5.2xlarge  : A10G 24GB  $1.21/hr  ← 선택 (가성비 최고)
+#   ml.g5.12xlarge : A10G×4 96GB $5.67/hr  멀티-GPU 필요 시
+#   ml.p4d.24xlarge: A100×8 320GB $32.77/hr 풀 파인튜닝 가능
+
 instance_type: ml.g5.2xlarge
 instance_count: 1
 volume_gb: 100
-max_runtime_seconds: 86400  # 24시간
+max_runtime_seconds: 28800   # 8시간 (여유 포함)

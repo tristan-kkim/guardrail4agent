@@ -1,13 +1,26 @@
-base_model_id: outputs/kanana-8b-guardrail-sft  # SFT 완료 체크포인트
+# Kanana-8B DPO — A10G 24GB (ml.g5.2xlarge) 최적화
+#
+# VRAM 사용량 추산:
+#   policy model  (4bit): ≈  4.0 GB
+#   reference model (4bit, frozen): ≈  4.0 GB   ← DPO는 ref model 상주 필요
+#   LoRA 어댑터 + 옵티마이저: ≈  0.3 GB
+#   활성화 값 (batch=2, seq=1024): ≈ 11.0 GB
+#   ────────────────────────────────────────────
+#   합계                         ≈ 19.3 GB  (여유 4.7 GB)
+#
+# DPO는 policy + reference 두 모델이 동시에 상주해야 하므로
+# SFT 대비 batch_size를 절반으로 낮추고 grad_accum으로 보완
+
+base_model_id: outputs/kanana-8b-guardrail-sft
 use_4bit: true
 data_path: data/synthetic/dpo_pairs.jsonl
 output_dir: outputs/kanana-8b-guardrail-dpo
 
 epochs: 1
-batch_size: 1
-grad_accum: 16
+batch_size: 2          # ref model 상주로 SFT 대비 절반
+grad_accum: 8          # effective batch size = 2 × 8 = 16 (SFT와 동일)
 lr: 5.0e-5
-beta: 0.1           # DPO temperature (낮을수록 reference model에 가깝게)
+beta: 0.1              # DPO temperature (낮을수록 ref model에 가깝게 유지)
 max_seq_length: 1024
 max_prompt_length: 512
 gradient_checkpointing: true

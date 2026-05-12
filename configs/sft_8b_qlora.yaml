@@ -1,13 +1,28 @@
+# Kanana-8B QLoRA SFT — A10G 24GB (ml.g5.2xlarge) 최적화
+#
+# VRAM 사용량 추산 (A10G 24GB):
+#   기본 모델 가중치  (4bit NF4): 8B × 0.5 bytes ≈  4.0 GB
+#   LoRA 어댑터     (bfloat16):  r=16, 4모듈       ≈  0.1 GB
+#   옵티마이저 상태 (LoRA만):    AdamW × 2          ≈  0.2 GB
+#   활성화 값       (ckpt ON):   batch=4, seq=1024  ≈ 14.0 GB
+#   기타 (tokenizer, 버퍼 등)                       ≈  1.0 GB
+#   ─────────────────────────────────────────────────────────
+#   합계                                            ≈ 19.3 GB  (여유 4.7 GB)
+#
+# Flash Attention 2: A10G는 Ampere (compute capability 8.6) → 지원
+# p3.2xlarge(V100, capability 7.0)로 변경 시 sft_train.py가 자동으로 "eager"로 전환
+
 model_id: kakaoai/kanana-1.5-8b-instruct
 use_4bit: true
 data_path: data/synthetic/train.jsonl
 output_dir: outputs/kanana-8b-guardrail-sft
 
 epochs: 3
-batch_size: 1
-grad_accum: 16
+batch_size: 4          # p3(V100 16GB)에서 1이었던 것을 24GB로 4배 증가
+grad_accum: 4          # effective batch size = 4 × 4 = 16
 lr: 1.0e-4
 max_seq_length: 1024
+gradient_checkpointing: true   # 활성화 값 재계산으로 VRAM 절감 (속도 약 15% 감소)
 
 lora:
   r: 16
