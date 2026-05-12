@@ -12,9 +12,9 @@
 # Flash Attention 2: A10G는 Ampere (compute capability 8.6) → 지원
 # p3.2xlarge(V100, capability 7.0)로 변경 시 sft_train.py가 자동으로 "eager"로 전환
 
-model_id: kakaoai/kanana-1.5-8b-instruct
+model_id: kakaocorp/kanana-1.5-8b-instruct-2505
 use_4bit: true
-data_path: data/synthetic/train.jsonl
+data_path: data/synthetic/sft_train.jsonl
 output_dir: outputs/kanana-8b-guardrail-sft
 
 epochs: 3

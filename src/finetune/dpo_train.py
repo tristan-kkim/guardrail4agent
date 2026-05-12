@@ -24,6 +24,9 @@ def load_config(config_path: str) -> dict:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", required=True)
+    parser.add_argument("--push-to-hub", action="store_true")
+    parser.add_argument("--hf-repo", default="tristan-kim/kanana-guardrail4agent")
+    parser.add_argument("--hf-token", default=None)
     args = parser.parse_args()
 
     cfg = load_config(args.config)
@@ -118,6 +121,13 @@ def main():
     trainer.save_model(output_dir)
     tokenizer.save_pretrained(output_dir)
     print(f"DPO model saved to {output_dir}")
+
+    if args.push_to_hub:
+        hf_token = args.hf_token or os.environ.get("HF_TOKEN")
+        print(f"\nHuggingFace Hub 업로드 중: {args.hf_repo}")
+        trainer.model.push_to_hub(args.hf_repo, token=hf_token, private=False)
+        tokenizer.push_to_hub(args.hf_repo, token=hf_token, private=False)
+        print(f"✓ 업로드 완료: https://huggingface.co/{args.hf_repo}")
 
 
 if __name__ == "__main__":

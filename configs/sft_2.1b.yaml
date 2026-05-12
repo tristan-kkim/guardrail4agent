@@ -11,9 +11,9 @@
 #
 # 2.1B는 24GB에서 4bit 양자화 없이도 여유롭게 학습 가능
 
-model_id: kakaoai/kanana-nano-2.1b-instruct
+model_id: kakaocorp/kanana-nano-2.1b-instruct
 use_4bit: false        # 24GB에서 full bfloat16 가능 → 수치 안정성 ↑
-data_path: data/synthetic/train.jsonl
+data_path: data/synthetic/sft_train.jsonl
 output_dir: outputs/kanana-2.1b-guardrail-sft
 
 epochs: 3
