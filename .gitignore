@@ -31,6 +31,7 @@ wandb/
 data/synthetic/*.jsonl
 data/synthetic/*.json
 !data/synthetic/sample_100.json
+!data/synthetic/s5_sample.json
 
 # Environment variables
 .env

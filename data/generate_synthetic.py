@@ -165,6 +165,31 @@ DPO_PAIR_TYPES = {
 }
 
 
+BATCH_SIZE = 5  # API 호출당 생성 건수 (JSON 잘림 방지)
+
+
+def _call_generate(prompt: str, client: anthropic.Anthropic) -> list[dict]:
+    """단일 API 호출로 JSON 배열 반환. 실패 시 빈 리스트."""
+    for attempt in range(1, MAX_RETRIES + 1):
+        try:
+            message = client.messages.create(
+                model="claude-haiku-4-5-20251001",
+                max_tokens=8192,
+                messages=[{"role": "user", "content": prompt}],
+            )
+            text = message.content[0].text
+            start = text.find("[")
+            end = text.rfind("]") + 1
+            if start == -1 or end == 0:
+                raise ValueError("JSON 배열을 찾을 수 없음")
+            return json.loads(text[start:end])
+        except Exception as e:
+            print(f"    시도 {attempt}/{MAX_RETRIES} 실패: {e}")
+            if attempt < MAX_RETRIES:
+                time.sleep(RETRY_DELAY * attempt)
+    return []
+
+
 def generate_scenarios(
     domain: str,
     category: str,
@@ -173,48 +198,41 @@ def generate_scenarios(
     s5_pattern: str | None = None,
 ) -> list[dict]:
     tools_str = ", ".join(DOMAIN_TOOLS.get(domain, DOMAIN_TOOLS["general"]))
+    results: list[dict] = []
 
-    if category == "S5" and s5_pattern:
-        prompt = S5_GENERATION_PROMPT.format(
-            count=count,
-            pattern_name=s5_pattern,
-            pattern_desc=S5_ATTACK_PATTERNS[s5_pattern],
-            domain=domain,
-            tools=tools_str,
-        )
-    else:
-        prompt = GENERATION_PROMPT.format(
-            count=count,
-            domain=domain,
-            category=category,
-            category_desc=CATEGORIES[category],
-            tools=tools_str,
-        )
-
-    for attempt in range(1, MAX_RETRIES + 1):
-        try:
-            message = client.messages.create(
-                model="claude-haiku-4-5-20251001",
-                max_tokens=4096,
-                messages=[{"role": "user", "content": prompt}],
+    # count를 BATCH_SIZE 단위로 나눠 호출 (JSON 잘림 방지)
+    remaining = count
+    while remaining > 0:
+        batch = min(remaining, BATCH_SIZE)
+        if category == "S5" and s5_pattern:
+            prompt = S5_GENERATION_PROMPT.format(
+                count=batch,
+                pattern_name=s5_pattern,
+                pattern_desc=S5_ATTACK_PATTERNS[s5_pattern],
+                domain=domain,
+                tools=tools_str,
             )
-            text = message.content[0].text
-            start = text.find("[")
-            end = text.rfind("]") + 1
-            if start == -1 or end == 0:
-                raise ValueError("JSON 배열을 찾을 수 없음")
-            scenarios = json.loads(text[start:end])
-            for s in scenarios:
-                s["domain"] = domain
-                s["label"] = category
-                if s5_pattern:
-                    s["s5_pattern"] = s5_pattern
-            return scenarios
-        except Exception as e:
-            print(f"  시도 {attempt}/{MAX_RETRIES} 실패: {e}")
-            if attempt < MAX_RETRIES:
-                time.sleep(RETRY_DELAY * attempt)
-    return []
+        else:
+            prompt = GENERATION_PROMPT.format(
+                count=batch,
+                domain=domain,
+                category=category,
+                category_desc=CATEGORIES[category],
+                tools=tools_str,
+            )
+
+        batch_result = _call_generate(prompt, client)
+        for s in batch_result:
+            s["domain"] = domain
+            s["label"] = category
+            if s5_pattern:
+                s["s5_pattern"] = s5_pattern
+        results.extend(batch_result)
+        remaining -= batch
+        if remaining > 0:
+            time.sleep(0.5)
+
+    return results
 
 
 def generate_dpo_pairs(
