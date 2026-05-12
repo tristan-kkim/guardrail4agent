@@ -28,8 +28,9 @@ runs/
 wandb/
 
 # Data (raw / generated — commit only samples)
-data/synthetic/*.jsonl
-data/synthetic/*.json
+data/synthetic/
+data/converted/
+data/final/
 !data/synthetic/sample_100.json
 !data/synthetic/s5_sample.json
 
