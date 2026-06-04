@@ -56,5 +56,11 @@ hub/
 # Claude Code
 .claude/
 
+# Large interactive HTML charts (hosted on HuggingFace)
+docs/figures/*.html
+
+# Logs
+logs/
+
 # AWS credentials
 .aws/
