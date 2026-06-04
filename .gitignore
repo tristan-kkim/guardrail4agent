@@ -57,7 +57,11 @@ hub/
 .claude/
 
 # Large interactive HTML charts (hosted on HuggingFace)
-docs/figures/*.html
+docs/figures/
+
+# Training/evaluation artifacts (로컬 전용)
+docs/training_log.md
+docs/evaluation_results.md
 
 # Logs
 logs/
