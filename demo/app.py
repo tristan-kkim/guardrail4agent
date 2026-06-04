@@ -167,6 +167,8 @@ USERS: dict[str, str] = {
     "test-dankook":          _h("32181070"),
 }
 
+ADMINS = {"tristan@cortexys.team"}
+
 # ── 레이트리밋 ────────────────────────────────────────────────────────────────
 
 _global: dict = {"date": "", "count": 0}
@@ -176,7 +178,7 @@ def _client_ip(request: Request) -> str:
     xff = request.headers.get("X-Forwarded-For")
     return xff.split(",")[0].strip() if xff else request.client.host
 
-def _rate_check(ip: str) -> None:
+def _rate_check(ip: str, is_admin: bool = False) -> None:
     today = date.today().isoformat()
     if _global["date"] != today:
         _global.update({"date": today, "count": 0})
@@ -184,7 +186,7 @@ def _rate_check(ip: str) -> None:
         _ip[ip] = {"date": today, "count": 0}
     if _global["count"] >= DAILY_QUOTA:
         raise HTTPException(status_code=429, detail=f"일일 전체 쿼터({DAILY_QUOTA}회)를 초과했습니다.")
-    if _ip[ip]["count"] >= IP_DAILY_LIMIT:
+    if not is_admin and _ip[ip]["count"] >= IP_DAILY_LIMIT:
         raise HTTPException(status_code=429, detail=f"이 IP에서 오늘 이미 {IP_DAILY_LIMIT}회 사용했습니다.")
     _global["count"] += 1
     _ip[ip]["count"] += 1
@@ -391,7 +393,7 @@ async def demo(
     username: str = Depends(_require_auth),
 ):
     ip = _client_ip(request)
-    _rate_check(ip)
+    _rate_check(ip, is_admin=username in ADMINS)
 
     # ── Stage 1: 에이전트 Tool Call 생성 ──────────────────────────────────────
     agent_model = "mock"
@@ -462,9 +464,12 @@ async def quota(request: Request, username: str = Depends(_require_auth)):
     today = date.today().isoformat()
     g = _global["count"] if _global["date"] == today else 0
     i = _ip.get(ip, {}).get("count", 0) if _ip.get(ip, {}).get("date") == today else 0
+    is_admin = username in ADMINS
     return {
-        "global": {"used": g, "limit": DAILY_QUOTA,    "remaining": DAILY_QUOTA - g},
-        "ip":     {"used": i, "limit": IP_DAILY_LIMIT, "remaining": IP_DAILY_LIMIT - i},
+        "global": {"used": g, "limit": DAILY_QUOTA, "remaining": DAILY_QUOTA - g},
+        "ip":     {"used": i, "limit": None if is_admin else IP_DAILY_LIMIT,
+                   "remaining": None if is_admin else IP_DAILY_LIMIT - i},
+        "is_admin": is_admin,
     }
 
 if __name__ == "__main__":
