@@ -5,166 +5,348 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Guardrail4Agent — AI 에이전트 보안 데모</title>
 <style>
+/* ── Toss 디자인 토큰 ─────────────────────────────────────────────── */
 :root {
-  --bg: #0a0f1e;
-  --surface: #111827;
-  --surface2: #1f2937;
-  --surface3: #374151;
-  --border: #2d3748;
-  --text: #f9fafb;
-  --text-muted: #9ca3af;
-  --text-dim: #6b7280;
-  --accent: #3b82f6;
-  --accent2: #6366f1;
-  --safe: #10b981;
-  --safe-bg: rgba(16,185,129,.12);
-  --safe-border: rgba(16,185,129,.3);
-  --unsafe: #ef4444;
-  --unsafe-bg: rgba(239,68,68,.12);
-  --unsafe-border: rgba(239,68,68,.3);
-  --warn: #f59e0b;
-  --r: 10px;
-  --r-sm: 6px;
+  --bg:              #f5f6f8;
+  --surface:         #ffffff;
+  --surface2:        #f9fafb;
+  --border:          #e5e8eb;
+  --text:            #191f28;
+  --text-secondary:  #4e5968;
+  --text-muted:      #8b95a1;
+  --primary:         #3182f6;
+  --primary-hover:   #1b6ef3;
+  --primary-pressed: #1461d1;
+  --primary-weak:    #ebf3fe;
+  --primary-weak-text: #3182f6;
+  --safe:            #0dcaa8;
+  --safe-bg:         #edfaf7;
+  --safe-border:     #c2f0e8;
+  --safe-text:       #00956e;
+  --unsafe:          #f04452;
+  --unsafe-bg:       #fff0f1;
+  --unsafe-border:   #ffd6d9;
+  --unsafe-text:     #d8333f;
+  --shadow-sm:       0 1px 3px rgba(0,23,51,.06), 0 1px 2px rgba(0,23,51,.04);
+  --shadow-md:       0 4px 16px rgba(0,23,51,.08), 0 2px 6px rgba(0,23,51,.04);
+  --r:               12px;
+  --r-sm:            8px;
+  --r-xs:            6px;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); height: 100dvh; display: flex; align-items: center; justify-content: center; }
+body {
+  font-family: -apple-system, 'Apple SD Gothic Neo', BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-font-smoothing: antialiased;
+}
 
-/* ── 로그인 ── */
+/* ── 로그인 ─────────────────────────────────────────────────────── */
 #login-screen { width: 100%; max-width: 400px; padding: 20px; }
-.login-logo { text-align: center; margin-bottom: 28px; }
-.login-logo .ico { font-size: 44px; display: block; margin-bottom: 10px; }
-.login-logo h1 { font-size: 20px; font-weight: 700; }
-.login-logo p { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
-.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 24px; }
-.field { margin-bottom: 14px; }
-.field label { display: block; font-size: 12px; font-weight: 500; color: var(--text-muted); margin-bottom: 5px; }
-.field input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 9px 12px; font-size: 14px; color: var(--text); outline: none; }
-.field input:focus { border-color: var(--accent); }
-#login-err { display: none; background: var(--unsafe-bg); border: 1px solid var(--unsafe-border); border-radius: var(--r-sm); padding: 9px 12px; font-size: 12px; color: #fca5a5; margin-bottom: 14px; }
-.btn-primary { width: 100%; background: var(--accent); color: #fff; border: none; border-radius: var(--r-sm); padding: 10px; font-size: 14px; font-weight: 600; cursor: pointer; }
-.btn-primary:hover { background: #2563eb; }
-.btn-primary:disabled { opacity: .45; cursor: not-allowed; }
 
-/* ── 메인 레이아웃 ── */
+.login-logo { text-align: center; margin-bottom: 32px; }
+.login-logo .ico {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 56px; height: 56px; background: var(--primary); color: #fff;
+  border-radius: 16px; font-size: 14px; font-weight: 800; letter-spacing: -.5px;
+  margin-bottom: 14px;
+}
+.login-logo h1 { font-size: 22px; font-weight: 700; color: var(--text); }
+.login-logo p  { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
+.card {
+  background: var(--surface);
+  border-radius: var(--r);
+  padding: 28px 24px;
+  box-shadow: var(--shadow-md);
+}
+.field { margin-bottom: 16px; }
+.field label {
+  display: block; font-size: 13px; font-weight: 600;
+  color: var(--text-secondary); margin-bottom: 6px;
+}
+.field input {
+  width: 100%; background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm); padding: 11px 14px;
+  font-size: 15px; color: var(--text); outline: none;
+  transition: border-color .15s;
+}
+.field input:focus { border-color: var(--primary); background: #fff; }
+.field input::placeholder { color: var(--text-muted); }
+
+#login-err {
+  display: none;
+  background: var(--unsafe-bg); border: 1.5px solid var(--unsafe-border);
+  border-radius: var(--r-sm); padding: 10px 14px;
+  font-size: 13px; color: var(--unsafe-text); margin-bottom: 16px;
+}
+
+/* ── 버튼 공통 (그라데이션 없음) ─────────────────────────────────── */
+.btn-primary {
+  width: 100%; height: 52px;
+  background: var(--primary); color: #fff;
+  border: none; border-radius: var(--r-sm);
+  font-size: 16px; font-weight: 700; cursor: pointer;
+  transition: background .15s;
+}
+.btn-primary:hover    { background: var(--primary-hover); }
+.btn-primary:active   { background: var(--primary-pressed); }
+.btn-primary:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ── 메인 레이아웃 ──────────────────────────────────────────────── */
 #app { display: none; width: 100%; height: 100dvh; flex-direction: column; max-width: 1280px; }
 
 /* 헤더 */
-.hdr { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px; height: 56px;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
 .hdr-l { display: flex; align-items: center; gap: 10px; }
-.hdr-l .ico { font-size: 20px; }
-.hdr-l h2 { font-size: 15px; font-weight: 700; }
-.badge-demo { font-size: 10px; background: var(--accent2); color: #fff; padding: 2px 7px; border-radius: 20px; }
+.hdr-logo {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; background: var(--primary); color: #fff;
+  border-radius: 8px; font-size: 9px; font-weight: 800; letter-spacing: -.3px;
+}
+.hdr-l h2 { font-size: 15px; font-weight: 700; color: var(--text); }
+.badge-demo {
+  font-size: 11px; background: var(--primary-weak);
+  color: var(--primary-weak-text); padding: 2px 8px;
+  border-radius: 20px; font-weight: 600;
+}
 .hdr-r { display: flex; align-items: center; gap: 12px; }
-.quota-pill { font-size: 12px; color: var(--text-muted); background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 3px 11px; }
+.quota-pill {
+  font-size: 12px; color: var(--text-muted);
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 20px; padding: 4px 12px;
+}
 .quota-pill strong { color: var(--text); }
-.user-name { font-size: 12px; color: var(--text-dim); }
-.btn-logout { background: none; border: 1px solid var(--border); border-radius: var(--r-sm); padding: 3px 10px; font-size: 12px; color: var(--text-muted); cursor: pointer; }
+.user-name { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
+.btn-logout {
+  background: none; border: 1.5px solid var(--border);
+  border-radius: var(--r-xs); padding: 5px 12px;
+  font-size: 13px; color: var(--text-muted); cursor: pointer;
+  transition: border-color .15s, color .15s;
+}
 .btn-logout:hover { border-color: var(--unsafe); color: var(--unsafe); }
 
 /* 탭 */
-.tabs { display: flex; gap: 4px; padding: 10px 20px 0; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; }
-.tab { padding: 8px 16px; font-size: 13px; font-weight: 500; cursor: pointer; border-radius: 6px 6px 0 0; color: var(--text-muted); border: 1px solid transparent; border-bottom: none; margin-bottom: -1px; position: relative; z-index: 1; }
-.tab.active { background: var(--bg); color: var(--text); border-color: var(--border); }
+.tabs {
+  display: flex; gap: 0; padding: 0 24px;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.tab {
+  padding: 14px 4px; margin-right: 24px;
+  font-size: 14px; font-weight: 500; cursor: pointer;
+  color: var(--text-muted); border-bottom: 2px solid transparent;
+  transition: color .15s, border-color .15s;
+}
+.tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 700; }
+.tab:hover:not(.active) { color: var(--text-secondary); }
 
 /* 바디 */
 .body { flex: 1; display: flex; overflow: hidden; }
 
-/* ── 데모 탭 ── */
+/* ── 데모 탭 ──────────────────────────────────────────────────── */
 #tab-demo { display: flex; width: 100%; height: 100%; overflow: hidden; }
 
 /* 사이드바 */
-.sidebar { width: 260px; flex-shrink: 0; border-right: 1px solid var(--border); overflow-y: auto; padding: 16px 12px; display: flex; flex-direction: column; gap: 8px; }
-.sidebar-title { font-size: 11px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: .06em; padding: 0 4px; margin-bottom: 4px; }
-.preset-card { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 10px 12px; cursor: pointer; transition: border-color .15s, background .15s; }
-.preset-card:hover { border-color: var(--accent); background: var(--surface3); }
-.preset-card.active { border-color: var(--accent); background: var(--surface3); }
-.preset-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; margin-bottom: 4px; }
-.preset-badge.safe { color: var(--safe); }
-.preset-badge.unsafe { color: var(--unsafe); }
-.preset-label { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
-.preset-desc { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+.sidebar {
+  width: 256px; flex-shrink: 0; border-right: 1px solid var(--border);
+  overflow-y: auto; padding: 16px 12px;
+  display: flex; flex-direction: column; gap: 6px;
+  background: var(--surface);
+}
+.sidebar-title {
+  font-size: 11px; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .07em;
+  padding: 0 6px; margin-bottom: 6px;
+}
+.preset-card {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--r-sm); padding: 11px 12px; cursor: pointer;
+  transition: border-color .15s, box-shadow .15s;
+}
+.preset-card:hover { border-color: var(--primary); box-shadow: var(--shadow-sm); }
+.preset-card.active { border-color: var(--primary); background: var(--primary-weak); }
+.preset-badge {
+  display: inline-flex; align-items: center;
+  font-size: 11px; font-weight: 700; margin-bottom: 4px;
+  padding: 2px 7px; border-radius: 4px;
+}
+.preset-badge.safe   { background: var(--safe-bg);   color: var(--safe-text); }
+.preset-badge.unsafe { background: var(--unsafe-bg); color: var(--unsafe-text); }
+.preset-label  { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.preset-desc   { font-size: 11px; color: var(--text-muted); line-height: 1.45; }
 
-.sidebar-divider { border: none; border-top: 1px solid var(--border); margin: 4px 0; }
+.sidebar-divider { border: none; border-top: 1px solid var(--border); margin: 6px 0; }
 
-.custom-area { padding: 4px; }
-.custom-area label { font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 5px; }
-.custom-area textarea { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 8px 10px; font-size: 12px; color: var(--text); resize: vertical; min-height: 64px; outline: none; font-family: inherit; }
-.custom-area textarea:focus { border-color: var(--accent); }
+.custom-area { padding: 4px 4px 0; }
+.custom-area label { font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 6px; font-weight: 500; }
+.custom-area textarea {
+  width: 100%; background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: var(--r-sm); padding: 8px 10px;
+  font-size: 12px; color: var(--text); resize: vertical; min-height: 68px;
+  outline: none; font-family: inherit; transition: border-color .15s;
+}
+.custom-area textarea:focus { border-color: var(--primary); background: #fff; }
+.custom-area textarea::placeholder { color: var(--text-muted); }
 
 /* 메인 영역 */
-.main { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+.main { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 16px; }
 
 /* 선택된 시나리오 */
-.scenario-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 16px 20px; }
-.scenario-box h3 { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
+.scenario-box {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 18px 20px;
+  box-shadow: var(--shadow-sm);
+}
+.scenario-box h3 { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: .05em; }
 .scenario-text { font-size: 15px; color: var(--text); line-height: 1.6; }
-.scenario-meta { margin-top: 8px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.meta-tag { font-size: 11px; color: var(--text-dim); background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 2px 8px; }
+.scenario-meta { margin-top: 10px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.meta-tag {
+  font-size: 12px; color: var(--text-secondary);
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--r-xs); padding: 3px 9px;
+}
 
 /* 실행 버튼 */
 .run-row { display: flex; align-items: center; gap: 12px; }
-.btn-run { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border: none; border-radius: var(--r-sm); padding: 11px 28px; font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: .02em; }
-.btn-run:hover { opacity: .9; }
+.btn-run {
+  height: 48px; padding: 0 28px;
+  background: var(--primary); color: #fff;
+  border: none; border-radius: var(--r-sm);
+  font-size: 15px; font-weight: 700; cursor: pointer;
+  transition: background .15s;
+  white-space: nowrap;
+}
+.btn-run:hover    { background: var(--primary-hover); }
+.btn-run:active   { background: var(--primary-pressed); }
 .btn-run:disabled { opacity: .4; cursor: not-allowed; }
-.run-hint { font-size: 12px; color: var(--text-dim); }
+.run-hint { font-size: 13px; color: var(--text-muted); }
 
 /* 파이프라인 */
 .pipeline { display: flex; flex-direction: column; gap: 0; }
 .pipe-step { position: relative; }
-.pipe-connector { width: 2px; height: 20px; background: var(--border); margin-left: 19px; }
-.pipe-connector.active { background: var(--accent); }
-.pipe-node { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 14px 16px; opacity: .4; transition: opacity .3s, border-color .3s; }
-.pipe-node.active { opacity: 1; border-color: var(--accent); }
-.pipe-node.done-safe  { opacity: 1; border-color: var(--safe);   background: var(--safe-bg);   }
-.pipe-node.done-unsafe{ opacity: 1; border-color: var(--unsafe); background: var(--unsafe-bg); }
-.pipe-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-.pipe-ico { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; background: var(--surface2); flex-shrink: 0; }
-.pipe-title { font-size: 13px; font-weight: 700; }
-.pipe-subtitle { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
-.pipe-body { padding-left: 46px; }
-.pipe-body pre { font-size: 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 10px 12px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; line-height: 1.5; color: #a5f3fc; font-family: 'Menlo','Consolas',monospace; }
+.pipe-connector {
+  width: 2px; height: 20px; background: var(--border);
+  margin-left: 19px; transition: background .3s;
+}
+.pipe-connector.active { background: var(--primary); }
+.pipe-node {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--r); padding: 14px 16px;
+  opacity: .45; transition: opacity .3s, border-color .3s, background .3s;
+  box-shadow: var(--shadow-sm);
+}
+.pipe-node.active    { opacity: 1; border-color: var(--primary); }
+.pipe-node.done-safe   { opacity: 1; border-color: var(--safe);   background: var(--safe-bg); }
+.pipe-node.done-unsafe { opacity: 1; border-color: var(--unsafe); background: var(--unsafe-bg); }
+.pipe-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.pipe-ico {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; background: var(--surface2);
+  color: var(--text-secondary); flex-shrink: 0; border: 1px solid var(--border);
+}
+.pipe-title    { font-size: 14px; font-weight: 700; color: var(--text); }
+.pipe-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+.pipe-body { padding-left: 46px; margin-top: 10px; }
+.pipe-body pre {
+  font-size: 12px; background: #f0f4f8;
+  border: 1px solid var(--border); border-radius: var(--r-sm);
+  padding: 12px 14px; overflow-x: auto; white-space: pre-wrap;
+  word-break: break-all; line-height: 1.55; color: #1a56a8;
+  font-family: 'Menlo', 'Consolas', monospace;
+}
 
 /* 결과 카드 */
-.result-banner { border-radius: var(--r-sm); padding: 12px 16px; display: flex; align-items: flex-start; gap: 12px; }
-.result-banner.safe   { background: var(--safe-bg);   border: 1px solid var(--safe-border); }
-.result-banner.unsafe { background: var(--unsafe-bg); border: 1px solid var(--unsafe-border); }
-.result-verdict { font-size: 16px; font-weight: 800; flex-shrink: 0; }
-.result-verdict.safe   { color: var(--safe); }
-.result-verdict.unsafe { color: var(--unsafe); }
+.result-banner {
+  border-radius: var(--r-sm); padding: 14px 16px;
+  display: flex; align-items: flex-start; gap: 14px;
+}
+.result-banner.safe   { background: var(--safe-bg);   border: 1.5px solid var(--safe-border);   }
+.result-banner.unsafe { background: var(--unsafe-bg); border: 1.5px solid var(--unsafe-border); }
+.result-verdict       { font-size: 15px; font-weight: 800; flex-shrink: 0; padding-top: 1px; }
+.result-verdict.safe   { color: var(--safe-text); }
+.result-verdict.unsafe { color: var(--unsafe-text); }
 .result-info { flex: 1; }
-.result-cat { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 4px; }
-.cat-code { font-size: 11px; font-weight: 700; background: var(--unsafe-bg); border: 1px solid var(--unsafe-border); color: #fca5a5; padding: 1px 7px; border-radius: 4px; }
-.cat-name { font-size: 12px; color: var(--text-muted); }
-.result-reason { font-size: 13px; color: var(--text); line-height: 1.6; }
-.result-latency { font-size: 11px; color: var(--text-dim); margin-top: 6px; }
+.result-cat  { display: inline-flex; align-items: center; gap: 7px; margin-bottom: 5px; }
+.cat-code {
+  font-size: 11px; font-weight: 700;
+  background: var(--unsafe-bg); border: 1px solid var(--unsafe-border);
+  color: var(--unsafe-text); padding: 2px 8px; border-radius: 4px;
+}
+.cat-name    { font-size: 13px; color: var(--text-secondary); }
+.result-reason  { font-size: 14px; color: var(--text); line-height: 1.6; }
+.result-latency { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
 
 /* 로딩 점 */
 .dots { display: inline-flex; gap: 4px; }
-.dots span { width: 6px; height: 6px; background: var(--text-muted); border-radius: 50%; animation: blink 1.2s infinite; }
+.dots span {
+  width: 5px; height: 5px; background: var(--text-muted);
+  border-radius: 50%; animation: blink 1.2s infinite;
+}
 .dots span:nth-child(2) { animation-delay: .2s; }
 .dots span:nth-child(3) { animation-delay: .4s; }
 @keyframes blink { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
 
-/* ── 직접 입력 탭 ── */
-#tab-manual { display: none; width: 100%; overflow-y: auto; padding: 24px; }
-.manual-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 900px; margin: 0 auto; }
+/* ── 직접 입력 탭 ────────────────────────────────────────────────── */
+#tab-manual { display: none; width: 100%; overflow-y: auto; padding: 24px; background: var(--bg); }
+.manual-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 16px; max-width: 900px; margin: 0 auto;
+}
 .manual-full { grid-column: 1 / -1; }
-.manual-label { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 5px; display: flex; align-items: center; gap: 6px; }
+.manual-label {
+  font-size: 13px; font-weight: 600; color: var(--text-secondary);
+  margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
+}
 .manual-label .req { color: var(--unsafe); }
-.manual-textarea { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 10px 12px; font-size: 13px; color: var(--text); resize: vertical; outline: none; font-family: 'Menlo','Consolas',monospace; line-height: 1.5; }
-.manual-textarea:focus { border-color: var(--accent); }
+.manual-textarea {
+  width: 100%; background: var(--surface);
+  border: 1.5px solid var(--border); border-radius: var(--r-sm);
+  padding: 11px 13px; font-size: 13px; color: var(--text);
+  resize: vertical; outline: none; font-family: 'Menlo','Consolas',monospace;
+  line-height: 1.55; transition: border-color .15s;
+}
+.manual-textarea:focus { border-color: var(--primary); }
+.manual-textarea::placeholder { color: var(--text-muted); }
 .manual-result { grid-column: 1 / -1; margin-top: 4px; }
 
-/* 토스트 */
-#toast { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(239,68,68,.92); color: #fff; border-radius: 8px; padding: 10px 20px; font-size: 13px; z-index: 999; max-width: 90%; text-align: center; }
+/* 카드 래퍼 (직접 입력 필드) */
+.field-card {
+  background: var(--surface); border-radius: var(--r);
+  padding: 20px; box-shadow: var(--shadow-sm); border: 1px solid var(--border);
+}
 
-/* 스크롤 */
-::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+/* 토스트 */
+#toast {
+  display: none; position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--text); color: #fff;
+  border-radius: var(--r-sm); padding: 12px 20px;
+  font-size: 13px; font-weight: 500; z-index: 999;
+  max-width: 90%; text-align: center;
+  box-shadow: var(--shadow-md);
+}
+
+/* 스크롤바 */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 </style>
 </head>
 <body>
 
-<!-- ── 로그인 ─────────────────────────────────────────────────────────── -->
+<!-- ── 로그인 ───────────────────────────────────────────────────── -->
 <div id="login-screen">
   <div class="login-logo">
     <div class="ico">G4A</div>
@@ -185,13 +367,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   </div>
 </div>
 
-<!-- ── 메인 앱 ─────────────────────────────────────────────────────────── -->
+<!-- ── 메인 앱 ──────────────────────────────────────────────────── -->
 <div id="app">
 
   <!-- 헤더 -->
   <div class="hdr">
     <div class="hdr-l">
-      <span class="ico">G4A</span>
+      <span class="hdr-logo">G4A</span>
       <h2>Guardrail4Agent</h2>
       <span class="badge-demo">Demo</span>
     </div>
@@ -204,7 +386,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
   <!-- 탭 -->
   <div class="tabs">
-    <div class="tab active" id="tab-btn-demo"  onclick="switchTab('demo')">에이전트 데모</div>
+    <div class="tab active" id="tab-btn-demo"   onclick="switchTab('demo')">에이전트 데모</div>
     <div class="tab"        id="tab-btn-manual" onclick="switchTab('manual')">직접 입력</div>
   </div>
 
@@ -214,7 +396,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
     <!-- ── 에이전트 데모 탭 ── -->
     <div id="tab-demo">
 
-      <!-- 사이드바: 시나리오 카드 -->
+      <!-- 사이드바 -->
       <div class="sidebar">
         <div class="sidebar-title">시나리오 선택</div>
 
@@ -265,14 +447,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       <!-- 메인: 파이프라인 -->
       <div class="main" id="main-area">
 
-        <!-- 선택된 시나리오 -->
         <div class="scenario-box">
           <h3>선택된 시나리오</h3>
           <div class="scenario-text" id="scenario-text">왼쪽에서 시나리오를 선택하거나 직접 입력하세요.</div>
           <div class="scenario-meta" id="scenario-meta"></div>
         </div>
 
-        <!-- 실행 버튼 -->
         <div class="run-row">
           <button class="btn-run" id="run-btn" onclick="runDemo()">가드레일 테스트 실행</button>
           <span class="run-hint" id="run-hint">시나리오를 선택하고 실행하세요</span>
@@ -281,7 +461,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
         <!-- 파이프라인 시각화 -->
         <div class="pipeline" id="pipeline" style="display:none">
 
-          <!-- Step 1: 사용자 요청 -->
           <div class="pipe-step">
             <div class="pipe-node active" id="step-user">
               <div class="pipe-header">
@@ -295,7 +474,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
             <div class="pipe-connector" id="conn-1"></div>
           </div>
 
-          <!-- Step 2: 에이전트 LLM -->
           <div class="pipe-step">
             <div class="pipe-node" id="step-agent">
               <div class="pipe-header">
@@ -312,7 +490,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
             <div class="pipe-connector" id="conn-2"></div>
           </div>
 
-          <!-- Step 3: Guardrail -->
           <div class="pipe-step">
             <div class="pipe-node" id="step-guard">
               <div class="pipe-header">
@@ -328,32 +505,32 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
             </div>
           </div>
 
-        </div><!-- /pipeline -->
+        </div>
 
-      </div><!-- /main -->
-    </div><!-- /tab-demo -->
+      </div>
+    </div>
 
     <!-- ── 직접 입력 탭 ── -->
     <div id="tab-manual">
       <div class="manual-grid">
-        <div class="manual-full">
-          <div class="manual-label"><span class="req">*</span> tool_call <span style="color:var(--text-dim);font-weight:400">(필수 — 에이전트가 실행할 Tool Call)</span></div>
+        <div class="manual-full field-card">
+          <div class="manual-label"><span class="req">*</span> tool_call <span style="color:var(--text-muted);font-weight:400">(필수 — 에이전트가 실행할 Tool Call)</span></div>
           <textarea class="manual-textarea" id="m-toolcall" rows="4"
             placeholder='예: {"tool": "send_email", "params": {"to": "admin@co.com", "body": "주민번호: 901010-1234567"}}'></textarea>
         </div>
-        <div>
+        <div class="field-card">
           <div class="manual-label">system_prompt</div>
           <textarea class="manual-textarea" id="m-sp" rows="3" placeholder="에이전트 시스템 프롬프트 (선택)"></textarea>
         </div>
-        <div>
+        <div class="field-card">
           <div class="manual-label">user_input</div>
           <textarea class="manual-textarea" id="m-ui" rows="3" placeholder="사용자 입력 (선택)"></textarea>
         </div>
-        <div>
+        <div class="field-card">
           <div class="manual-label">tool_result</div>
           <textarea class="manual-textarea" id="m-tr" rows="3" placeholder="Tool 실행 결과 (선택 — S3 탐지에 필요)"></textarea>
         </div>
-        <div>
+        <div class="field-card">
           <div class="manual-label">next_action</div>
           <textarea class="manual-textarea" id="m-na" rows="3" placeholder="에이전트 다음 행동 (선택)"></textarea>
         </div>
@@ -365,8 +542,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       </div>
     </div>
 
-  </div><!-- /body -->
-</div><!-- /app -->
+  </div>
+</div>
 
 <div id="toast"></div>
 
@@ -377,10 +554,8 @@ let currentUser = localStorage.getItem('g4a_user');
 let selectedPreset = 'safe';
 let presets = {};
 
-// ── 초기화 ────────────────────────────────────────────────────────────────
 if (token) showApp();
 
-// ── 로그인 ────────────────────────────────────────────────────────────────
 async function doLogin() {
   const username = document.getElementById('un').value.trim();
   const password = document.getElementById('pw').value;
@@ -417,7 +592,6 @@ async function showApp() {
   selectPreset('safe');
 }
 
-// ── 프리셋 로드 ───────────────────────────────────────────────────────────
 async function loadPresets() {
   try {
     const res = await fetch('/presets');
@@ -425,33 +599,28 @@ async function loadPresets() {
   } catch {}
 }
 
-// ── 쿼터 ─────────────────────────────────────────────────────────────────
 async function refreshQuota() {
   try {
     const res = await fetch('/quota', { headers:{Authorization:`Bearer ${token}`} });
     if (res.status===401) { doLogout(); return; }
     const d = await res.json();
-    document.getElementById('q-ip').textContent     = d.ip.remaining;
+    document.getElementById('q-ip').textContent     = d.ip.remaining ?? '무제한';
     document.getElementById('q-global').textContent = d.global.remaining;
   } catch {}
 }
 
-// ── 탭 전환 ──────────────────────────────────────────────────────────────
 function switchTab(name) {
-  document.getElementById('tab-demo').style.display   = name==='demo'   ? 'flex' : 'none';
-  document.getElementById('tab-manual').style.display = name==='manual' ? 'block': 'none';
+  document.getElementById('tab-demo').style.display   = name==='demo'   ? 'flex'  : 'none';
+  document.getElementById('tab-manual').style.display = name==='manual' ? 'block' : 'none';
   document.getElementById('tab-btn-demo').classList.toggle('active',   name==='demo');
   document.getElementById('tab-btn-manual').classList.toggle('active', name==='manual');
 }
 
-// ── 프리셋 선택 ───────────────────────────────────────────────────────────
 function selectPreset(id) {
-  // 카드 하이라이트
   ['safe','s1','s2','s3','s4','s5'].forEach(k => {
     const el = document.getElementById('card-'+k);
     if (el) el.classList.toggle('active', k===id);
   });
-
   if (id && presets[id]) {
     selectedPreset = id;
     document.getElementById('custom-scenario').value = '';
@@ -460,7 +629,7 @@ function selectPreset(id) {
     const meta = document.getElementById('scenario-meta');
     const isUnsafe = id !== 'safe';
     meta.innerHTML = `
-      <span class="meta-tag" style="color:${isUnsafe?'var(--unsafe)':'var(--safe)'}">${p.label}</span>
+      <span class="meta-tag" style="color:${isUnsafe?'var(--unsafe-text)':'var(--safe-text)'};background:${isUnsafe?'var(--unsafe-bg)':'var(--safe-bg)'};border-color:${isUnsafe?'var(--unsafe-border)':'var(--safe-border)'}">${p.label}</span>
       <span class="meta-tag">${p.desc}</span>`;
     document.getElementById('run-hint').textContent = '실행하면 에이전트가 Tool Call을 생성하고 가드레일이 분석합니다';
   } else {
@@ -470,37 +639,24 @@ function selectPreset(id) {
     document.getElementById('scenario-meta').innerHTML = '';
     document.getElementById('run-hint').textContent = custom ? '실행하면 에이전트가 Tool Call을 생성합니다' : '시나리오를 입력하세요';
   }
-
-  // 파이프라인 숨기기
   document.getElementById('pipeline').style.display = 'none';
 }
 
-// ── 데모 실행 ─────────────────────────────────────────────────────────────
 async function runDemo() {
   const btn = document.getElementById('run-btn');
   const custom = document.getElementById('custom-scenario').value.trim();
-
-  const body = selectedPreset
-    ? { preset_id: selectedPreset }
-    : { scenario: custom };
-
-  if (!selectedPreset && !custom) {
-    showToast('시나리오를 선택하거나 직접 입력하세요'); return;
-  }
+  const body = selectedPreset ? { preset_id: selectedPreset } : { scenario: custom };
+  if (!selectedPreset && !custom) { showToast('시나리오를 선택하거나 직접 입력하세요'); return; }
 
   btn.disabled = true;
   resetPipeline();
 
-  // Step 1 활성화
   activateStep('step-user');
   document.getElementById('step-user-sub').textContent =
-    selectedPreset && presets[selectedPreset]
-      ? presets[selectedPreset].scenario
-      : custom;
+    selectedPreset && presets[selectedPreset] ? presets[selectedPreset].scenario : custom;
 
   await delay(400);
 
-  // Step 2 활성화 (에이전트)
   activateConnector('conn-1');
   activateStep('step-agent');
   document.getElementById('step-agent-sub').innerHTML =
@@ -515,7 +671,6 @@ async function runDemo() {
     const d = await res.json();
     if (!res.ok) { if (res.status===401) { doLogout(); return; } throw new Error(d.detail||'오류'); }
 
-    // Step 2 완료: 모델명 + tool_call 표시
     document.getElementById('step-agent-sub').textContent = `모델: ${d.agent_model}`;
     document.getElementById('tool-call-display').textContent = formatJson(d.tool_call);
     document.getElementById('step-agent-body').style.display = 'block';
@@ -523,7 +678,6 @@ async function runDemo() {
 
     await delay(500);
 
-    // Step 3 활성화 (guardrail)
     activateConnector('conn-2');
     activateStep('step-guard');
     document.getElementById('step-guard-sub').innerHTML =
@@ -531,7 +685,6 @@ async function runDemo() {
 
     await delay(300);
 
-    // Step 3 완료: 결과
     const g = d.guardrail;
     const safe = g.is_safe;
     document.getElementById('step-guard-sub').textContent = `모델: ${g.model}`;
@@ -547,18 +700,16 @@ async function runDemo() {
         <span class="cat-name">${g.category_desc||''}</span>
       </div>`;
     }
-    html += `<div class="result-reason">${esc(g.reason) || (safe?'정상적인 Tool Call입니다.':'위험한 Tool Call이 감지되었습니다.')}</div>
+    html += `<div class="result-reason">${esc(g.reason)||(safe?'정상적인 Tool Call입니다.':'위험한 Tool Call이 감지되었습니다.')}</div>
       <div class="result-latency">Guardrail 응답: ${g.latency_ms}ms</div>
       </div></div>`;
     document.getElementById('result-card').innerHTML = html;
     document.getElementById('step-guard-body').style.display = 'block';
 
-    // 쿼터 갱신
     if (d.quota) {
-      document.getElementById('q-ip').textContent     = d.quota.remaining_ip;
+      document.getElementById('q-ip').textContent     = d.quota.remaining_ip ?? '무제한';
       document.getElementById('q-global').textContent = d.quota.remaining_global;
     }
-
   } catch(e) {
     showToast(e.message);
     resetPipeline();
@@ -567,7 +718,6 @@ async function runDemo() {
   }
 }
 
-// ── 직접 입력 실행 ────────────────────────────────────────────────────────
 async function runManual() {
   const toolCall = document.getElementById('m-toolcall').value.trim();
   if (!toolCall) { showToast('tool_call을 입력하세요'); return; }
@@ -578,7 +728,7 @@ async function runManual() {
 
   try {
     const body = {
-      tool_call:  toolCall,
+      tool_call: toolCall,
       context: {
         system_prompt: document.getElementById('m-sp').value,
         user_input:    document.getElementById('m-ui').value,
@@ -608,7 +758,7 @@ async function runManual() {
     document.getElementById('manual-result').innerHTML = html;
 
     if (d.quota) {
-      document.getElementById('q-ip').textContent     = d.quota.remaining_ip;
+      document.getElementById('q-ip').textContent     = d.quota.remaining_ip ?? '무제한';
       document.getElementById('q-global').textContent = d.quota.remaining_global;
     }
     document.getElementById('manual-hint').textContent = '완료';
@@ -620,13 +770,12 @@ async function runManual() {
   }
 }
 
-// ── 파이프라인 헬퍼 ───────────────────────────────────────────────────────
 function resetPipeline() {
   document.getElementById('pipeline').style.display = 'flex';
   ['step-user','step-agent','step-guard'].forEach(id => {
     const el = document.getElementById(id);
     el.classList.remove('active','done-safe','done-unsafe');
-    el.style.opacity = '.4';
+    el.style.opacity = '.45';
   });
   ['conn-1','conn-2'].forEach(id => document.getElementById(id).classList.remove('active'));
   document.getElementById('step-agent-body').style.display = 'none';
@@ -638,14 +787,10 @@ function activateStep(id) {
   el.classList.add('active');
   el.style.opacity = '1';
 }
-function activateConnector(id) {
-  document.getElementById(id).classList.add('active');
-}
+function activateConnector(id) { document.getElementById(id).classList.add('active'); }
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
-
 function formatJson(str) {
-  try { return JSON.stringify(JSON.parse(str), null, 2); }
-  catch { return str; }
+  try { return JSON.stringify(JSON.parse(str), null, 2); } catch { return str; }
 }
 function esc(s) {
   if (!s) return '';
