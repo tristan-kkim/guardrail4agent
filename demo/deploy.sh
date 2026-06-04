@@ -20,12 +20,8 @@ ssh -i "$PEM" -o StrictHostKeyChecking=no "$REMOTE" \
   "command -v docker || (sudo apt-get update -q && sudo apt-get install -y -q docker.io docker-compose-plugin && sudo usermod -aG docker ubuntu)"
 
 echo "▶ demo/ 폴더 업로드..."
-rsync -avz --exclude '__pycache__' -e "ssh -i $PEM -o StrictHostKeyChecking=no" \
+rsync -avz --exclude '__pycache__' --exclude '.env' -e "ssh -i $PEM -o StrictHostKeyChecking=no" \
   "$(dirname "$0")/" "${REMOTE}:/home/ubuntu/guardrail-demo/"
-
-echo "▶ .env 파일 업로드..."
-scp -i "$PEM" -o StrictHostKeyChecking=no \
-  "$(dirname "$0")/.env" "${REMOTE}:/home/ubuntu/guardrail-demo/.env"
 
 echo "▶ Docker Compose 빌드 & 실행..."
 ssh -i "$PEM" -o StrictHostKeyChecking=no "$REMOTE" \

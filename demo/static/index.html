@@ -167,7 +167,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 <!-- ── 로그인 ─────────────────────────────────────────────────────────── -->
 <div id="login-screen">
   <div class="login-logo">
-    <span class="ico">🛡️</span>
+    <div class="ico">G4A</div>
     <h1>Guardrail4Agent</h1>
     <p>AI 에이전트 Tool Call 보안 분류기 데모</p>
   </div>
@@ -191,7 +191,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   <!-- 헤더 -->
   <div class="hdr">
     <div class="hdr-l">
-      <span class="ico">🛡️</span>
+      <span class="ico">G4A</span>
       <h2>Guardrail4Agent</h2>
       <span class="badge-demo">Demo</span>
     </div>
@@ -204,8 +204,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
   <!-- 탭 -->
   <div class="tabs">
-    <div class="tab active" id="tab-btn-demo"  onclick="switchTab('demo')">🤖 에이전트 데모</div>
-    <div class="tab"        id="tab-btn-manual" onclick="switchTab('manual')">🔧 직접 입력</div>
+    <div class="tab active" id="tab-btn-demo"  onclick="switchTab('demo')">에이전트 데모</div>
+    <div class="tab"        id="tab-btn-manual" onclick="switchTab('manual')">직접 입력</div>
   </div>
 
   <!-- 바디 -->
@@ -219,37 +219,37 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
         <div class="sidebar-title">시나리오 선택</div>
 
         <div class="preset-card active" id="card-safe" onclick="selectPreset('safe')">
-          <div class="preset-badge safe">✅ SAFE</div>
+          <div class="preset-badge safe">SAFE</div>
           <div class="preset-label">정상 요청</div>
           <div class="preset-desc">날씨 검색 — 개인정보 없음</div>
         </div>
 
         <div class="preset-card" id="card-s1" onclick="selectPreset('s1')">
-          <div class="preset-badge unsafe">🚨 S1</div>
+          <div class="preset-badge unsafe">S1</div>
           <div class="preset-label">PII 유출</div>
           <div class="preset-desc">주민번호·계좌번호가 외부 이메일로 전송</div>
         </div>
 
         <div class="preset-card" id="card-s2" onclick="selectPreset('s2')">
-          <div class="preset-badge unsafe">🚨 S2</div>
+          <div class="preset-badge unsafe">S2</div>
           <div class="preset-label">Credential 유출</div>
           <div class="preset-desc">DB 비밀번호가 외부 Webhook으로 전송</div>
         </div>
 
         <div class="preset-card" id="card-s3" onclick="selectPreset('s3')">
-          <div class="preset-badge unsafe">🚨 S3</div>
+          <div class="preset-badge unsafe">S3</div>
           <div class="preset-label">Prompt Injection</div>
           <div class="preset-desc">이메일 본문의 숨겨진 명령이 에이전트 탈취</div>
         </div>
 
         <div class="preset-card" id="card-s4" onclick="selectPreset('s4')">
-          <div class="preset-badge unsafe">🚨 S4</div>
+          <div class="preset-badge unsafe">S4</div>
           <div class="preset-label">내부 데이터 외부 전달</div>
           <div class="preset-desc">전화번호 포함 고객 DB가 구글 시트로 유출</div>
         </div>
 
         <div class="preset-card" id="card-s5" onclick="selectPreset('s5')">
-          <div class="preset-badge unsafe">🚨 S5</div>
+          <div class="preset-badge unsafe">S5</div>
           <div class="preset-label">시스템 프롬프트 추출</div>
           <div class="preset-desc">에이전트 내부 지시사항이 파일로 저장</div>
         </div>
@@ -274,7 +274,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
         <!-- 실행 버튼 -->
         <div class="run-row">
-          <button class="btn-run" id="run-btn" onclick="runDemo()">▶ 가드레일 테스트 실행</button>
+          <button class="btn-run" id="run-btn" onclick="runDemo()">가드레일 테스트 실행</button>
           <span class="run-hint" id="run-hint">시나리오를 선택하고 실행하세요</span>
         </div>
 
@@ -285,7 +285,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
           <div class="pipe-step">
             <div class="pipe-node active" id="step-user">
               <div class="pipe-header">
-                <div class="pipe-ico">👤</div>
+                <div class="pipe-ico">User</div>
                 <div>
                   <div class="pipe-title">사용자 요청</div>
                   <div class="pipe-subtitle" id="step-user-sub">에이전트에 작업 지시</div>
@@ -299,7 +299,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
           <div class="pipe-step">
             <div class="pipe-node" id="step-agent">
               <div class="pipe-header">
-                <div class="pipe-ico">🤖</div>
+                <div class="pipe-ico">LLM</div>
                 <div>
                   <div class="pipe-title">에이전트 LLM</div>
                   <div class="pipe-subtitle" id="step-agent-sub">Tool Call 생성 중...</div>
@@ -316,7 +316,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
           <div class="pipe-step">
             <div class="pipe-node" id="step-guard">
               <div class="pipe-header">
-                <div class="pipe-ico">🛡️</div>
+                <div class="pipe-ico">G4A</div>
                 <div>
                   <div class="pipe-title">Guardrail 분류기</div>
                   <div class="pipe-subtitle" id="step-guard-sub">Tool Call 분석 중...</div>
@@ -358,7 +358,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
           <textarea class="manual-textarea" id="m-na" rows="3" placeholder="에이전트 다음 행동 (선택)"></textarea>
         </div>
         <div class="manual-full" style="display:flex;gap:12px;align-items:center">
-          <button class="btn-run" id="manual-btn" onclick="runManual()">▶ 분류 실행</button>
+          <button class="btn-run" id="manual-btn" onclick="runManual()">분류 실행</button>
           <span class="run-hint" id="manual-hint">tool_call을 입력하고 실행하세요</span>
         </div>
         <div class="manual-result" id="manual-result"></div>
@@ -539,7 +539,7 @@ async function runDemo() {
     document.getElementById('step-guard').classList.add(safe ? 'done-safe' : 'done-unsafe');
 
     let html = `<div class="result-banner ${safe?'safe':'unsafe'}">
-      <div class="result-verdict ${safe?'safe':'unsafe'}">${safe?'✅ SAFE':'🚨 UNSAFE'}</div>
+      <div class="result-verdict ${safe?'safe':'unsafe'}">${safe?'SAFE':'UNSAFE'}</div>
       <div class="result-info">`;
     if (!safe && g.category) {
       html += `<div class="result-cat">
@@ -597,7 +597,7 @@ async function runManual() {
     const g = d.guardrail;
     const safe = g.is_safe;
     let html = `<div class="result-banner ${safe?'safe':'unsafe'}">
-      <div class="result-verdict ${safe?'safe':'unsafe'}">${safe?'✅ SAFE':'🚨 UNSAFE'}</div>
+      <div class="result-verdict ${safe?'safe':'unsafe'}">${safe?'SAFE':'UNSAFE'}</div>
       <div class="result-info">`;
     if (!safe && g.category) {
       html += `<div class="result-cat"><span class="cat-code">${g.category}</span><span class="cat-name">${g.category_desc||''}</span></div>`;

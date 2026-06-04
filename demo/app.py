@@ -28,6 +28,8 @@ ANTHROPIC_API_KEY  = os.environ.get("ANTHROPIC_API_KEY", "")   # 에이전트 + 
 INFERENCE_API_KEY  = os.environ.get("INFERENCE_API_KEY", "")   # KakaoCloud KC_IS 키
 INFERENCE_ENDPOINT = os.environ.get("INFERENCE_ENDPOINT", "")  # KakaoCloud 엔드포인트 URL
 INFERENCE_MODEL    = os.environ.get("INFERENCE_MODEL", "kanana")
+HF_API_TOKEN       = os.environ.get("HF_API_TOKEN", "")        # HuggingFace API 토큰
+HF_MODEL_ID        = os.environ.get("HF_MODEL_ID", "tristan-kim/kanana-guardrail4agent")
 AGENT_MODEL        = os.environ.get("AGENT_MODEL", "claude-sonnet-4-6")
 JWT_SECRET         = os.environ.get("JWT_SECRET", "guardrail-demo-jwt-secret-key-2026-secure")
 JWT_ALGORITHM      = "HS256"
@@ -239,7 +241,7 @@ async def _call_anthropic(system: str, user: str, model: str, max_tokens: int = 
     return resp.json()["content"][0]["text"].strip()
 
 async def _call_kanana(system: str, user: str) -> str:
-    """KakaoCloud Inference Service 호출."""
+    """KakaoCloud Inference Service 호출 (OpenAI-compatible)."""
     if not INFERENCE_ENDPOINT:
         raise RuntimeError("INFERENCE_ENDPOINT가 설정되지 않았습니다.")
     async with httpx.AsyncClient(timeout=60.0) as client:
@@ -258,6 +260,49 @@ async def _call_kanana(system: str, user: str) -> str:
     resp.raise_for_status()
     return resp.json()["choices"][0]["message"]["content"].strip()
 
+
+def _build_kanana_prompt(user_content: str) -> str:
+    """classifier.py와 동일한 Kanana 채팅 템플릿으로 프롬프트 구성."""
+    return (
+        f"<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n"
+        f"{GUARDRAIL_SYSTEM}<|eot_id|>\n"
+        f"<|start_header_id|>user<|end_header_id|>\n"
+        f"{user_content}<|eot_id|>\n"
+        f"<|start_header_id|>assistant<|end_header_id|>\n"
+    )
+
+
+async def _call_hf_inference(user_content: str) -> str:
+    """HuggingFace Inference API — tristan-kim/kanana-guardrail4agent 파인튜닝 모델."""
+    if not HF_API_TOKEN:
+        raise RuntimeError("HF_API_TOKEN이 설정되지 않았습니다.")
+    prompt = _build_kanana_prompt(user_content)
+    async with httpx.AsyncClient(timeout=120.0) as client:
+        resp = await client.post(
+            f"https://api-inference.huggingface.co/models/{HF_MODEL_ID}",
+            headers={
+                "Authorization": f"Bearer {HF_API_TOKEN}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "inputs": prompt,
+                "parameters": {
+                    "max_new_tokens": 128,
+                    "do_sample": False,
+                    "return_full_text": False,
+                },
+            },
+        )
+    resp.raise_for_status()
+    result = resp.json()
+    # HF text-generation: [{"generated_text": "..."}]
+    if isinstance(result, list) and result:
+        return result[0].get("generated_text", "").strip()
+    # 모델 로딩 중 응답
+    if isinstance(result, dict) and result.get("error"):
+        raise RuntimeError(f"HF 모델 오류: {result['error']}")
+    return str(result).strip()
+
 async def _run_agent(scenario: str) -> tuple[str, str]:
     """에이전트 LLM 호출 → (tool_call_json, model_name)"""
     if ANTHROPIC_API_KEY:
@@ -270,7 +315,9 @@ async def _run_agent(scenario: str) -> tuple[str, str]:
     raise RuntimeError("에이전트 모델 미설정: ANTHROPIC_API_KEY를 설정하세요.")
 
 async def _run_guardrail(tool_call: str, context: dict) -> tuple[bool, Optional[str], str, float]:
-    """Guardrail 분류 → (is_safe, category, reason, latency_ms)"""
+    """Guardrail 분류 → (is_safe, category, reason, latency_ms)
+    우선순위: HuggingFace(Kanana 파인튜닝) → KakaoCloud → Claude Haiku
+    """
     user_content = (
         f"[SYSTEM_PROMPT]: {context.get('system_prompt','')}\n"
         f"[USER_INPUT]: {context.get('user_input','')}\n"
@@ -279,12 +326,14 @@ async def _run_guardrail(tool_call: str, context: dict) -> tuple[bool, Optional[
         f"[NEXT_ACTION]: {context.get('next_action','')}"
     )
     t0 = time.time()
-    if INFERENCE_ENDPOINT:
+    if HF_API_TOKEN:
+        raw = await _call_hf_inference(user_content)
+    elif INFERENCE_ENDPOINT:
         raw = await _call_kanana(GUARDRAIL_SYSTEM, user_content)
     elif ANTHROPIC_API_KEY:
         raw = await _call_anthropic(GUARDRAIL_SYSTEM, user_content, "claude-haiku-4-5-20251001", 256)
     else:
-        raise RuntimeError("추론 서버 미설정: INFERENCE_ENDPOINT 또는 ANTHROPIC_API_KEY를 설정하세요.")
+        raise RuntimeError("추론 서버 미설정: HF_API_TOKEN, INFERENCE_ENDPOINT, ANTHROPIC_API_KEY 중 하나를 설정하세요.")
     latency = (time.time() - t0) * 1000
 
     lines = [l.strip() for l in raw.split("\n") if l.strip()]
@@ -395,7 +444,11 @@ async def demo(
             "category_desc": CATEGORY_DESC.get(category) if category else None,
             "reason":        reason,
             "latency_ms":    round(latency, 1),
-            "model":         INFERENCE_MODEL if INFERENCE_ENDPOINT else "claude-haiku-4-5-20251001",
+            "model": (
+                HF_MODEL_ID        if HF_API_TOKEN       else
+                INFERENCE_MODEL    if INFERENCE_ENDPOINT  else
+                "claude-haiku-4-5-20251001"
+            ),
         },
         "quota": {
             "remaining_global": DAILY_QUOTA    - _global["count"],
