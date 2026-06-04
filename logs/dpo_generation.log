@@ -1,0 +1,52 @@
+DPO 총 400개 배치 시작 (목표: 2000쌍)...
+  [1/3] 실패: Expecting ',' delimiter: line 15 column 3 (char 922)
+  [1/3] 실패: Expecting ',' delimiter: line 15 column 3 (char 898)
+  DPO 진행: 50쌍 저장됨
+  [1/3] 실패: Expecting ',' delimiter: line 15 column 3 (char 798)
+  DPO 진행: 100쌍 저장됨
+  DPO 진행: 150쌍 저장됨
+  [1/3] 실패: Expecting ',' delimiter: line 15 column 3 (char 878)
+  [1/3] 실패: Expecting ',' delimiter: line 15 column 3 (char 853)
+  DPO 진행: 200쌍 저장됨
+  DPO 진행: 250쌍 저장됨
+  [1/3] 실패: Expecting ',' delimiter: line 15 column 3 (char 818)
+  DPO 진행: 300쌍 저장됨
+  DPO 진행: 350쌍 저장됨
+  [1/3] 실패: Expecting ',' delimiter: line 15 column 3 (char 887)
+  DPO 진행: 400쌍 저장됨
+  DPO 진행: 450쌍 저장됨
+  DPO 진행: 500쌍 저장됨
+  DPO 진행: 550쌍 저장됨
+  DPO 진행: 600쌍 저장됨
+  DPO 진행: 650쌍 저장됨
+  DPO 진행: 700쌍 저장됨
+  DPO 진행: 750쌍 저장됨
+  DPO 진행: 800쌍 저장됨
+  DPO 진행: 850쌍 저장됨
+  DPO 진행: 900쌍 저장됨
+  DPO 진행: 950쌍 저장됨
+  [1/3] 실패: Expecting ',' delimiter: line 15 column 3 (char 888)
+  DPO 진행: 1000쌍 저장됨
+  DPO 진행: 1050쌍 저장됨
+  DPO 진행: 1100쌍 저장됨
+  DPO 진행: 1150쌍 저장됨
+  [1/3] 실패: Expecting ',' delimiter: line 15 column 3 (char 725)
+  DPO 진행: 1200쌍 저장됨
+  DPO 진행: 1250쌍 저장됨
+  DPO 진행: 1300쌍 저장됨
+  DPO 진행: 1350쌍 저장됨
+  DPO 진행: 1400쌍 저장됨
+  DPO 진행: 1450쌍 저장됨
+  DPO 진행: 1500쌍 저장됨
+  DPO 진행: 1550쌍 저장됨
+  DPO 진행: 1600쌍 저장됨
+  DPO 진행: 1650쌍 저장됨
+  DPO 진행: 1700쌍 저장됨
+  DPO 진행: 1750쌍 저장됨
+  DPO 진행: 1800쌍 저장됨
+  DPO 진행: 1850쌍 저장됨
+  DPO 진행: 1900쌍 저장됨
+  DPO 진행: 1950쌍 저장됨
+  DPO 진행: 2000쌍 저장됨
+
+DPO 쌍 저장: data/synthetic/dpo_pairs.jsonl (2000건)
