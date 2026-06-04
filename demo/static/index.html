@@ -49,11 +49,9 @@ body {
 #login-screen { width: 100%; max-width: 400px; padding: 20px; }
 
 .login-logo { text-align: center; margin-bottom: 32px; }
-.login-logo .ico {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 56px; height: 56px; background: var(--primary); color: #fff;
-  border-radius: 16px; font-size: 14px; font-weight: 800; letter-spacing: -.5px;
-  margin-bottom: 14px;
+.login-logo .logo-gif {
+  display: block; width: 72px; height: 72px; margin: 0 auto 14px;
+  object-fit: contain;
 }
 .login-logo h1 { font-size: 22px; font-weight: 700; color: var(--text); }
 .login-logo p  { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
@@ -349,7 +347,7 @@ body {
 <!-- ── 로그인 ───────────────────────────────────────────────────── -->
 <div id="login-screen">
   <div class="login-logo">
-    <div class="ico">G4A</div>
+    <img class="logo-gif" src="https://www.cortexys.team/symbol.gif" alt="Cortexys" draggable="false">
     <h1>Guardrail4Agent</h1>
     <p>AI 에이전트 Tool Call 보안 분류기 데모</p>
   </div>
