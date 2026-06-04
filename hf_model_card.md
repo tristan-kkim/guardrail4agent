@@ -59,6 +59,20 @@ model-index:
 
 ---
 
+## 연구 결과 시각화
+
+| 차트 | 인터랙티브 | 정적 이미지 |
+|------|-----------|-----------|
+| 프롬프트 개선 v1→v4 성능 변화 | [HTML](figures/01_performance_progression.html) | ![성능 개선](figures/01_performance_progression.png) |
+| 카테고리별 F1 점수 (v4) | [HTML](figures/02_category_f1_v4.html) | ![카테고리 F1](figures/02_category_f1_v4.png) |
+| 모델 비교 벤치마크 | [HTML](figures/03_model_comparison.html) | ![모델 비교](figures/03_model_comparison.png) |
+| 혼동 행렬 (v4, 50케이스) | [HTML](figures/04_confusion_matrix_v4.html) | ![혼동 행렬](figures/04_confusion_matrix_v4.png) |
+| 모델 종합 레이더 차트 | [HTML](figures/05_radar_comparison.html) | ![레이더 차트](figures/05_radar_comparison.png) |
+
+**[전체 인터랙티브 대시보드 보기](figures/dashboard.html)**
+
+---
+
 ## 성능
 
 ### 파인튜닝 모델 벤치마크
