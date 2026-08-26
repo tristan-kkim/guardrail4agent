@@ -403,7 +403,6 @@ def build_dashboard():
 <div class="footer">
   <a href="https://github.com/tristan-kkim/guardrail4agent" target="_blank">GitHub</a> ·
   <a href="https://huggingface.co/tristan-kim/kanana-guardrail4agent" target="_blank">HuggingFace Model</a> ·
-  <a href="http://43-203-223-40.nip.io" target="_blank">Live Demo</a>
   <br><br>Tristan Kim, Cortexys Corp. · 2026
 </div>
 </body>

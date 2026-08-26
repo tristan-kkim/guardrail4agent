@@ -4,7 +4,9 @@
 
 > Fine-tuning Kanana as a Korean-specialized guardrail for detecting data leakage in LLM Agent Tool Calls
 
-[Demo](http://43-203-223-40.nip.io) | [HuggingFace Model](https://huggingface.co/tristan-kim/kanana-guardrail4agent) | [Dataset](https://huggingface.co/datasets/tristan-kim/kanana-guardrail4agent-dataset)
+[HuggingFace Model](https://huggingface.co/tristan-kim/kanana-guardrail4agent) | [Dataset](https://huggingface.co/datasets/tristan-kim/kanana-guardrail4agent-dataset)
+
+> 라이브 데모는 2026-08 인스턴스 종료로 현재 내려가 있습니다. 재현은 `demo/` 를 로컬에서 기동하십시오.
 
 ---
 
@@ -87,7 +89,7 @@ Tool 실행 또는 차단
 
 ## 라이브 데모
 
-**URL**: http://43-203-223-40.nip.io
+**URL**: (서비스 종료 — 2026-08 데모 인스턴스 내림. 로컬 기동은 아래 참조)
 
 - **에이전트 데모**: 사전 정의된 6가지 위협 시나리오 선택 → 2단계 파이프라인 실시간 시각화
 - **직접 입력**: tool_call, tool_result, next_action 직접 입력 후 분류
@@ -241,4 +243,18 @@ docker-compose up -d
 
 ## 라이선스
 
-본 프로젝트는 연구 목적으로 공개됩니다. 베이스 모델(Kanana) 라이선스를 준수하세요.
+| 대상 | 라이선스 |
+|---|---|
+| 코드 (`src/`, `demo/`, `scripts/`, `configs/`, `notebooks/`) | Apache-2.0 |
+| 학습된 모델 가중치 | **CC BY-NC 4.0 (비상업)** |
+
+베이스 모델 [`kakaocorp/kanana-nano-2.1b-instruct`](https://huggingface.co/kakaocorp/kanana-nano-2.1b-instruct)
+가 CC-BY-NC-4.0 으로 배포되므로 이를 파인튜닝한 가중치는 비상업 조건을 승계합니다.
+코드는 상업적으로 사용할 수 있으나 배포된 가중치는 그렇지 않습니다. 자세한 내용은
+[`LICENSE`](LICENSE) 와 [`NOTICE`](NOTICE) 를 참조하십시오.
+
+### 평가 픽스처에 대한 고지
+
+`src/evaluate/run_tests.py` 에는 API 키·AWS 자격증명·개인키 형태의 문자열이 등장합니다.
+전부 S2(Credential 유출) 탐지를 평가하기 위한 **의도적인 가짜 값**이며(AWS 공식 문서의
+예시 키 `AKIAIOSFODNN7EXAMPLE` 등), 실제 자격증명이 아닙니다.

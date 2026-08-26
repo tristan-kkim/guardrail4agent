@@ -2,7 +2,8 @@
 language:
 - ko
 - en
-license: apache-2.0
+license: cc-by-nc-4.0
+base_model: kakaocorp/kanana-nano-2.1b-instruct
 tags:
 - security
 - guardrail
@@ -36,7 +37,7 @@ model-index:
 
 > Korean-specialized guardrail model for detecting data leakage in LLM Agent Tool Calls, fine-tuned from Kanana-nano-2.1b-instruct.
 
-[GitHub](https://github.com/tristan-kkim/guardrail4agent) | [Live Demo](http://43-203-223-40.nip.io) | [Dataset](https://huggingface.co/datasets/tristan-kim/kanana-guardrail4agent-dataset)
+[GitHub](https://github.com/tristan-kkim/guardrail4agent) | [Dataset](https://huggingface.co/datasets/tristan-kim/kanana-guardrail4agent-dataset)
 
 ---
 
