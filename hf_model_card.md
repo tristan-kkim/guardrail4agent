@@ -270,7 +270,19 @@ response = requests.post(API_URL, headers=headers, json={
 
 ## 라이선스
 
-Apache 2.0. 베이스 모델(Kanana) 라이선스를 준수하세요.
+| 대상 | 라이선스 |
+|---|---|
+| 이 모델의 가중치 | **CC BY-NC 4.0 (비상업)** |
+| 학습·평가 코드 ([GitHub](https://github.com/tristan-kkim/guardrail4agent)) | Apache-2.0 |
+| 데이터셋 ([guardrail4agent-sft](https://huggingface.co/datasets/tristan-kim/guardrail4agent-sft)) | Apache-2.0 |
+
+베이스 모델 [`kakaocorp/kanana-nano-2.1b-instruct`](https://huggingface.co/kakaocorp/kanana-nano-2.1b-instruct)
+가 CC-BY-NC-4.0 으로 배포되므로 이를 파인튜닝한 **가중치는 비상업 조건을 승계합니다.**
+데이터셋은 Claude(claude-haiku-4-5 / claude-sonnet-4-6)로 합성 생성한 것으로 Kanana
+가중치의 파생물이 아니므로 Apache-2.0 을 따릅니다.
+
+The model weights inherit CC-BY-NC-4.0 from the base model `kakaocorp/kanana-nano-2.1b-instruct`
+and may not be used commercially. The training code and the synthetic dataset are Apache-2.0.
 
 ---
 
