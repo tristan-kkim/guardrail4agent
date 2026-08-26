@@ -16,6 +16,7 @@ Copyright 2026 Tristan Kim (Cortexys)
    즉 코드는 상업적으로 사용할 수 있으나, 배포된 가중치를 상업적 목적으로
    사용할 수 없습니다.
 
-데이터셋은 Claude(Anthropic)로 합성 생성한 Tool Call 시나리오이며 별도 고지를
-따릅니다. 실제 개인정보나 실제 자격증명은 포함하지 않습니다 — 평가 픽스처에
+데이터셋(https://huggingface.co/datasets/tristan-kim/guardrail4agent-sft)은
+Claude(claude-haiku-4-5 / claude-sonnet-4-6)로 합성 생성한 Tool Call 시나리오이며
+Kanana 가중치의 파생물이 아니므로 Apache-2.0 으로 배포합니다. 실제 개인정보나 실제 자격증명은 포함하지 않습니다 — 평가 픽스처에
 등장하는 키 형태 문자열은 AWS 공식 문서 예시값 등 의도적인 가짜입니다.

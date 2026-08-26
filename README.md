@@ -4,7 +4,7 @@
 
 > Fine-tuning Kanana as a Korean-specialized guardrail for detecting data leakage in LLM Agent Tool Calls
 
-[HuggingFace Model](https://huggingface.co/tristan-kim/kanana-guardrail4agent) | [Dataset](https://huggingface.co/datasets/tristan-kim/kanana-guardrail4agent-dataset)
+[HuggingFace Model](https://huggingface.co/tristan-kim/kanana-guardrail4agent) | [Dataset](https://huggingface.co/datasets/tristan-kim/guardrail4agent-sft)
 
 > 라이브 데모는 2026-08 인스턴스 종료로 현재 내려가 있습니다. 재현은 `demo/` 를 로컬에서 기동하십시오.
 

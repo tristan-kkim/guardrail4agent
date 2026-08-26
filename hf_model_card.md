@@ -15,7 +15,7 @@ tags:
 - data-leakage
 pipeline_tag: text-classification
 datasets:
-- tristan-kim/kanana-guardrail4agent-dataset
+- tristan-kim/guardrail4agent-sft
 model-index:
 - name: kanana-guardrail4agent
   results:
@@ -37,7 +37,7 @@ model-index:
 
 > Korean-specialized guardrail model for detecting data leakage in LLM Agent Tool Calls, fine-tuned from Kanana-nano-2.1b-instruct.
 
-[GitHub](https://github.com/tristan-kkim/guardrail4agent) | [Dataset](https://huggingface.co/datasets/tristan-kim/kanana-guardrail4agent-dataset)
+[GitHub](https://github.com/tristan-kkim/guardrail4agent) | [Dataset](https://huggingface.co/datasets/tristan-kim/guardrail4agent-sft)
 
 ---
 
