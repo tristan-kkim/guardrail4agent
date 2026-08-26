@@ -68,3 +68,6 @@ logs/
 
 # AWS credentials
 .aws/
+
+# 데모 영상·나레이션 산출물 (outputs/ 와 별개)
+output/
